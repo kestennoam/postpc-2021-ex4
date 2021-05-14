@@ -22,6 +22,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".SuccessActivity" />
+
 <!--        TODO create a new class extending Activity and register it here in an <activity> tag -->
 
     </application>
