@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +22,6 @@ import java.io.Serializable;
 public class MainActivity extends AppCompatActivity {
 
 
-
     private BroadcastReceiver broadcastReceiverForSuccess = null;
     private BroadcastReceiver broadcastReceiverForFailure = null;
 
@@ -30,13 +30,13 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonCalculateRoots;
 
 
-    static class MainActivityState implements Serializable{
+    static class MainActivityState implements Serializable {
         String editTextVal;
         boolean isEditTextEnabled;
         boolean isButtonEnabled;
         int progressVisibility;
 
-        public MainActivityState(String editTextVal, boolean isEditTextEnabled, boolean isButtonEnabled, int progressVisibility){
+        public MainActivityState(String editTextVal, boolean isEditTextEnabled, boolean isButtonEnabled, int progressVisibility) {
             this.editTextVal = editTextVal;
             this.isEditTextEnabled = isEditTextEnabled;
             this.isButtonEnabled = isButtonEnabled;
@@ -118,18 +118,25 @@ public class MainActivity extends AppCompatActivity {
         };
         registerReceiver(broadcastReceiverForSuccess, new IntentFilter(CalculateRootsService.ACTION_SUCCESS_ROOTS));
 
-    /*
-    todo:
-     add a broadcast-receiver to listen for abort-calculating as defined in the spec (below)
-     to show a Toast, use this code:
-     `Toast.makeText(this, "text goes here", Toast.LENGTH_SHORT).show()`
-     */
+        broadcastReceiverForFailure = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent == null || !intent.getAction().equals(CalculateRootsService.ACTION_FAILURE_ROOTS)) {
+                    return;
+                }
+                // failure finding roots
+                Toast.makeText(MainActivity.this, "Aborted after 20 sec", Toast.LENGTH_SHORT).show();
+                resetUI();
+            }
+        };
+        registerReceiver(broadcastReceiverForFailure, new IntentFilter(CalculateRootsService.ACTION_FAILURE_ROOTS));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcastReceiverForSuccess);
+        unregisterReceiver(broadcastReceiverForFailure);
     }
 
     @Override
